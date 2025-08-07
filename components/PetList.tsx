@@ -5,14 +5,15 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
-import React, { useState } from "react";
-import pets from "@/data/pets";
+import React, { useEffect, useState } from "react";
 import PetItem from "./PetItem";
+import axios, { AxiosError } from "axios";
 
 const PetList = () => {
   const [search, setSearch] = useState("");
   const [type, setType] = useState("");
-  const [displayPets, setDisplayPets] = useState(pets);
+  const [displayPets, setDisplayPets] = useState([]);
+  const [isError, setIsError] = useState<String | null>(null);
 
   const petList = displayPets
     .filter((pet) => pet.name.toLowerCase().includes(search.toLowerCase()))
@@ -25,6 +26,26 @@ const PetList = () => {
         displayPets={displayPets}
       />
     ));
+
+  // https://pets-react-query-backend.eapi.joincoded.com/pets
+
+  const getInfo = async () => {
+    try {
+      const response = await axios.get(
+        "https://pets-react-query-backend.eapi.joincoded.com/pets"
+      );
+      setDisplayPets(response.data);
+    } catch (error) {
+      const err = error as AxiosError;
+      console.log("ERROR:", err.message);
+      setIsError(err.message);
+    }
+  };
+
+  useEffect(() => {
+    getInfo();
+  }, []);
+
   return (
     <ScrollView
       contentContainerStyle={styles.container}
